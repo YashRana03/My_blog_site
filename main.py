@@ -22,7 +22,7 @@ Bootstrap(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-db.create_all()
+
 
 # Login manager setup
 login_manager = LoginManager()
@@ -68,7 +68,7 @@ class Comments(db.Model):
 
     blog_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'))
     blog_post = relationship('BlogPost', back_populates='comments')
-
+db.create_all()
 # Gravatar setup
 gravatar = Gravatar(app,
                     size=100,
