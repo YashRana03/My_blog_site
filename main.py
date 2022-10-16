@@ -15,7 +15,7 @@ import smtplib
 
 app = Flask(__name__)
 load_dotenv('.env')
-app.config['SECRET_KEY'] = os.environ.get('DATABASE_URL')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY_BLOG')
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
