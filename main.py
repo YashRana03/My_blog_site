@@ -6,15 +6,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, RegisterUserForm, UserLoginForm, CommentForm
+from forms import CreatePostForm, RegisterUserForm, UserLoginForm, CommentForm, ContactForm
 from flask_gravatar import Gravatar
 from functools import wraps
 from dotenv import load_dotenv
 import os
+import smtplib
 
 app = Flask(__name__)
 load_dotenv('.env')
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY_BLOG')
+app.config['SECRET_KEY'] = os.environ.get('DATABASE_URL')
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
@@ -27,6 +28,8 @@ db = SQLAlchemy(app)
 # Login manager setup
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+email_password = os.environ.get('PASSWORD')
 
 
 @login_manager.user_loader
@@ -71,7 +74,8 @@ class Comments(db.Model):
 
 # db.create_all()
 
-# Gravatar setup
+
+# Gravatar setup Used for logos for the comment section in below the posts
 gravatar = Gravatar(app,
                     size=100,
                     rating='g',
@@ -92,7 +96,7 @@ def admin_only(f):
             return f(*args, **kwargs)
     return decorated_function
 
-
+# Home route, shows the home page
 @app.route('/')
 def get_all_posts():
 
@@ -100,6 +104,7 @@ def get_all_posts():
     return render_template("index.html", all_posts=posts)
 
 
+# Register route used by the user to register
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterUserForm()
@@ -124,6 +129,7 @@ def register():
     return render_template("register.html", form=form)
 
 
+# Login route used by the user to login
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     form = UserLoginForm()
@@ -145,12 +151,14 @@ def login():
     return render_template("login.html", form=form)
 
 
+# Logout route used by the user to logout of their account
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
 
 
+# Post route, returns the blog post selected by the user
 @app.route("/post/<int:post_id>", methods=['GET', 'POST'])
 def show_post(post_id):
     requested_post = BlogPost.query.get(post_id)
@@ -173,16 +181,31 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post, form=form, comments=comments)
 
 
+# About route, shows the about page
 @app.route("/about")
 def about():
     return render_template("about.html")
 
 
-@app.route("/contact")
+# Contact route, show the contact me page
+@app.route("/contact", methods=['POST', 'GET'])
 def contact():
-    return render_template("contact.html")
+    form = ContactForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        name = form.name.data
+        message = form.message.data
+        connection = smtplib.SMTP("smtp.gmail.com", 587)
+        connection.starttls()
+        connection.login("yashcode.wiz1@gmail.com", email_password)
+        connection.sendmail(from_addr="yashcode.wiz1@gmail.com", to_addrs="kumar.yashrana1718@gmail.com",
+                            msg=f"Subject: New blog message\n\nemail: {email}\nname: {name}\n{message}")
+        connection.close()
+        return redirect(url_for('get_all_posts'))
+    return render_template("contact.html", form=form)
 
 
+# new-post route, allows the admin to add a new post
 @app.route("/new-post", methods=['GET', 'POST'])
 @admin_only
 def add_new_post():
@@ -202,6 +225,7 @@ def add_new_post():
     return render_template("make-post.html", form=form)
 
 
+# edit-post route, allows the admin to edit a post
 @app.route("/edit-post/<int:post_id>", methods=['GET', 'POST'])
 @admin_only
 def edit_post(post_id):
@@ -223,6 +247,7 @@ def edit_post(post_id):
     return render_template("make-post.html", form=edit_form, is_edit=True)
 
 
+# delete route, allows the admin to delete a post
 @app.route("/delete/<int:post_id>")
 @admin_only
 def delete_post(post_id):
