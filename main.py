@@ -192,16 +192,18 @@ def about():
 def contact():
     form = ContactForm()
     if form.validate_on_submit():
-        email = form.email.data
-        name = form.name.data
-        message = form.message.data
-        connection = smtplib.SMTP("smtp.gmail.com", 587)
-        connection.starttls()
-        connection.login("yashcode.wiz1@gmail.com", email_password)
-        connection.sendmail(from_addr="yashcode.wiz1@gmail.com", to_addrs="kumar.yashrana1718@gmail.com",
-                            msg=f"Subject: New blog message\n\nemail: {email}\nname: {name}\n{message}")
-        connection.close()
-        return redirect(url_for('get_all_posts'))
+        pass
+        # The SMTP LIBRARY does not work on heroku. It is suggested to use third party email service which unfortunately are priced.
+        # email = form.email.data
+        # name = form.name.data
+        # message = form.message.data
+        # connection = smtplib.SMTP("smtp.gmail.com", 587)
+        # connection.starttls()
+        # connection.login("yashcode.wiz1@gmail.com", email_password)
+        # connection.sendmail(from_addr="yashcode.wiz1@gmail.com", to_addrs="kumar.yashrana1718@gmail.com",
+        #                     msg=f"Subject: New blog message\n\nemail: {email}\nname: {name}\n{message}")
+        # connection.close()
+        # return redirect(url_for('get_all_posts'))
     return render_template("contact.html", form=form)
 
 
