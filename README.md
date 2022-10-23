@@ -2,7 +2,7 @@
 
 This is my personal blog website built with the flask framework of python. 
 
-# Builiding it
+# Building it
 
 I programmed the entire Backend in python and used a template for the Frontend. Using the templating language Jinja I was able to modify the template to create different pages.
 The program makes use of a SQL-Light database to store blog information such as title, post, etc. 
